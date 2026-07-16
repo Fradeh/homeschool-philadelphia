@@ -13,6 +13,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
+    "prisma:seed:remote-demo": "node -r ts-node/register prisma/seed-remote-demo.ts",
     "test": "node --test -r ts-node/register test/*.test.cjs",
     "load:smoke": "k6 run -e LOAD_TEST_PROFILE=smoke load-tests/mvp-baseline.js",
     "load:baseline": "k6 run -e LOAD_TEST_PROFILE=baseline load-tests/mvp-baseline.js",

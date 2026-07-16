@@ -17,6 +17,7 @@
     "db:migrate": "pnpm --filter @homeschool/api prisma:migrate",
     "db:deploy": "pnpm --filter @homeschool/api prisma:deploy",
     "db:seed": "pnpm --filter @homeschool/api prisma:seed",
+    "db:seed:remote-demo": "pnpm --filter @homeschool/api prisma:seed:remote-demo",
     "test": "pnpm -r test",
     "qa:db:reset": "node scripts/qa/reset-test-db.mjs",
     "qa:e2e": "node scripts/qa/run-e2e.mjs",
