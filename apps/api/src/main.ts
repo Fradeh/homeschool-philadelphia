@@ -58,7 +58,7 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
 
-  const port = config.get<number>("API_PORT", 4000);
+  const port = config.get<number>("PORT") ?? config.get<number>("API_PORT", 4000);
   await app.listen(port);
 }
 
