@@ -1,0 +1,2 @@
+ALTER TABLE "ClassMaterial"
+ADD COLUMN "isImportant" BOOLEAN NOT NULL DEFAULT false;

@@ -1,0 +1,1128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  ADMIN
+  ADMINISTRATIVE
+  TEACHER
+  STUDENT
+  PARENT
+  DIRECTOR
+}
+
+enum GroupVisibility {
+  PRIVATE
+  SCHOOL_WIDE
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EventScope {
+  GENERAL
+  GROUP
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+enum AcademicStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  PENDING
+  WITHDRAWN
+  COMPLETED
+}
+
+enum ParentRelationship {
+  MOTHER
+  FATHER
+  GUARDIAN
+  TUTOR
+  OTHER
+}
+
+enum PaceProgressStatus {
+  PLANNED
+  CURRENT
+  COMPLETED
+  NEEDS_REVIEW
+}
+
+enum PaceGradeStatus {
+  PENDING
+  GRADED
+  REVISED
+}
+
+enum ConversationStatus {
+  OPEN
+  ESCALATED
+  CLOSED
+}
+
+enum ConversationParticipantType {
+  STUDENT
+  TEACHER
+  PARENT
+  DIRECTOR
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
+
+enum SchedulePeriodKind {
+  INSTRUCTIONAL
+  BREAK
+}
+
+enum ScheduleTemplateStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ScheduleAudienceType {
+  GRADE
+  CLASS
+  TEACHER
+}
+
+enum ScheduleBlockKind {
+  SUBJECT
+  PACES
+  ACTIVITY
+  EMPTY
+}
+
+enum PhysicalBookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ClassAssignmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum ClassSubmissionStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  RETURNED
+  GRADED
+}
+
+enum ClassMaterialKind {
+  FILE
+  LINK
+}
+
+enum GcrReportStatus {
+  DRAFT
+  SUBMITTED_ON_TIME
+  SUBMITTED_LATE
+  INCOMPLETE
+  MODIFIED_POST_CLOSE
+  VOIDED
+}
+
+enum GcrAttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+}
+
+enum GcrTaskCompletionStatus {
+  COMPLETED
+  NOT_COMPLETED
+}
+
+enum GcrAuditAction {
+  CREATED
+  UPDATED
+  SUBMITTED
+  POST_CLOSE_UPDATED
+  VOIDED
+}
+
+model User {
+  id                       String                    @id @default(uuid())
+  email                    String                    @unique
+  passwordHash             String
+  firstName                String
+  lastName                 String
+  isActive                 Boolean                   @default(true)
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  roles                    UserRole[]
+  groupMemberships         GroupMember[]
+  posts                    Post[]                    @relation("PostAuthor")
+  comments                 Comment[]                 @relation("CommentAuthor")
+  files                    FileAttachment[]          @relation("FileUploader")
+  notifications            Notification[]
+  createdGroups            Group[]                   @relation("GroupCreator")
+  createdEvents            Event[]                   @relation("EventCreator")
+  auditLogs                AuditLog[]                @relation("AuditActor")
+  studentProfile           StudentProfile?
+  teacherProfile           TeacherProfile?
+  parentProfile            ParentProfile?
+  directorProfile          DirectorProfile?
+  gradedPaces              PaceGrade[]               @relation("PaceGradeGrader")
+  conversationParticipants ConversationParticipant[]
+  sentConversationMessages ConversationMessage[]     @relation("ConversationMessageSender")
+  createdConversations     Conversation[]            @relation("ConversationCreator")
+  classWallPosts           ClassWallPost[]           @relation("ClassWallPostAuthor")
+  classWallComments        ClassWallComment[]        @relation("ClassWallCommentAuthor")
+  classAssignments         ClassAssignment[]         @relation("ClassAssignmentAuthor")
+  classMaterials           ClassMaterial[]           @relation("ClassMaterialUploader")
+  gcrReportsCreated        GcrReport[]               @relation("GcrReportCreator")
+  gcrReportsUpdated        GcrReport[]               @relation("GcrReportUpdater")
+  gcrReportsSubmitted      GcrReport[]               @relation("GcrReportSubmitter")
+  gcrReportsVoided         GcrReport[]               @relation("GcrReportVoider")
+  gcrAttendancesCreated    GcrAttendance[]           @relation("GcrAttendanceCreator")
+  gcrAttendancesUpdated    GcrAttendance[]           @relation("GcrAttendanceUpdater")
+  gcrSubjectTasksCreated   GcrSubjectTask[]          @relation("GcrSubjectTaskCreator")
+  gcrSubjectTasksUpdated   GcrSubjectTask[]          @relation("GcrSubjectTaskUpdater")
+  gcrVersesCreated         GcrVerse[]                @relation("GcrVerseCreator")
+  gcrVersesUpdated         GcrVerse[]                @relation("GcrVerseUpdater")
+  gcrMeritsCreated         GcrMerit[]                @relation("GcrMeritCreator")
+  gcrMeritsVoided          GcrMerit[]                @relation("GcrMeritVoider")
+  gcrDemeritsCreated       GcrDemerit[]              @relation("GcrDemeritCreator")
+  gcrDemeritsVoided        GcrDemerit[]              @relation("GcrDemeritVoider")
+  gcrAuditEvents           GcrAuditEvent[]
+
+  @@index([email])
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  name        RoleName   @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  users       UserRole[]
+}
+
+model UserRole {
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model Group {
+  id          String          @id @default(uuid())
+  name        String
+  description String?
+  visibility  GroupVisibility @default(PRIVATE)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  createdById String?
+  createdBy   User?           @relation("GroupCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  members     GroupMember[]
+  posts       Post[]
+  events      Event[]
+
+  @@index([createdById])
+}
+
+model GroupMember {
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([userId, groupId])
+}
+
+model Post {
+  id          String           @id @default(uuid())
+  title       String
+  content     String
+  status      PostStatus       @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  groupId     String
+  authorId    String?
+  group       Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author      User?            @relation("PostAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  comments    Comment[]
+  attachments FileAttachment[]
+
+  @@index([groupId])
+  @@index([authorId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  postId    String
+  authorId  String?
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User?    @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+model FileAttachment {
+  id           String   @id @default(uuid())
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  storageKey   String
+  publicUrl    String?
+  createdAt    DateTime @default(now())
+  uploadedById String?
+  postId       String?
+  uploadedBy   User?    @relation("FileUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  post         Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([uploadedById])
+  @@index([postId])
+}
+
+model Event {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  scope       EventScope @default(GENERAL)
+  startsAt    DateTime
+  endsAt      DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  groupId     String?
+  createdById String?
+  group       Group?     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy   User?      @relation("EventCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([groupId])
+  @@index([createdById])
+}
+
+model Notification {
+  id        String             @id @default(uuid())
+  title     String
+  body      String
+  status    NotificationStatus @default(UNREAD)
+  createdAt DateTime           @default(now())
+  readAt    DateTime?
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  actorId   String?
+  actor     User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([entity, entityId])
+}
+
+model StudentProfile {
+  id               String                   @id @default(uuid())
+  userId           String                   @unique
+  studentCode      String?                  @unique
+  gradeLevel       String?
+  gradeLevelId     String?
+  status           AcademicStatus           @default(ACTIVE)
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments      ClassEnrollment[]
+  parents          StudentParent[]
+  paceRecords      StudentPaceRecord[]
+  paceGoals        StudentPaceGoal[]
+  grade            GradeLevel?              @relation(fields: [gradeLevelId], references: [id], onDelete: SetNull)
+  physicalBookings StudentPhysicalBooking[]
+  submissions      ClassSubmission[]
+  gcrReports       GcrReport[]
+  gcrVerses        GcrVerse[]
+
+  @@index([status])
+  @@index([gradeLevelId])
+}
+
+model TeacherProfile {
+  id                    String                    @id @default(uuid())
+  userId                String                    @unique
+  employeeCode          String?                   @unique
+  status                AcademicStatus            @default(ACTIVE)
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  user                  User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classLinks            ClassTeacher[]
+  subjectLinks          ClassSubjectTeacher[]
+  scheduleBlocks        ScheduleTemplateBlock[]
+  scheduleTemplates     ScheduleTemplate[]
+  availabilitySlots     TeacherAvailabilitySlot[]
+  physicalBookings      StudentPhysicalBooking[]
+  responsibleGcrReports GcrReport[]
+
+  @@index([status])
+}
+
+model ParentProfile {
+  id        String          @id @default(uuid())
+  userId    String          @unique
+  phone     String?
+  status    AcademicStatus  @default(ACTIVE)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  students  StudentParent[]
+
+  @@index([status])
+}
+
+model DirectorProfile {
+  id        String         @id @default(uuid())
+  userId    String         @unique
+  title     String?
+  status    AcademicStatus @default(ACTIVE)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model StudentParent {
+  studentId              String
+  parentId               String
+  relationship           ParentRelationship @default(GUARDIAN)
+  isPrimary              Boolean            @default(false)
+  receivesAcademicEmails Boolean            @default(true)
+  receivesBehaviorEmails Boolean            @default(true)
+  receivesBillingEmails  Boolean            @default(false)
+  canViewGrades          Boolean            @default(true)
+  canMessageTeachers     Boolean            @default(true)
+  createdAt              DateTime           @default(now())
+  student                StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parent                 ParentProfile      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, parentId])
+  @@index([parentId])
+}
+
+model AcademicYear {
+  id                String             @id @default(uuid())
+  name              String
+  startsAt          DateTime
+  endsAt            DateTime
+  isActive          Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  terms             AcademicTerm[]
+  classes           AcademicClass[]
+  scheduleTemplates ScheduleTemplate[]
+
+  @@unique([name])
+  @@index([isActive])
+}
+
+model AcademicTerm {
+  id             String              @id @default(uuid())
+  academicYearId String
+  name           String
+  order          Int
+  startsAt       DateTime
+  endsAt         DateTime
+  isActive       Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  academicYear   AcademicYear        @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  paceRecords    StudentPaceRecord[]
+  paceGoals      StudentPaceGoal[]
+  gcrReports     GcrReport[]
+  gcrVerses      GcrVerse[]
+
+  @@unique([academicYearId, order])
+  @@index([academicYearId])
+  @@index([isActive])
+}
+
+model AcademicClass {
+  id                String             @id @default(uuid())
+  academicYearId    String
+  gradeLevelId      String?
+  name              String
+  code              String
+  description       String?
+  color             String?
+  status            AcademicStatus     @default(ACTIVE)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  academicYear      AcademicYear       @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  gradeLevel        GradeLevel?        @relation(fields: [gradeLevelId], references: [id], onDelete: SetNull)
+  teachers          ClassTeacher[]
+  enrollments       ClassEnrollment[]
+  subjects          ClassSubject[]
+  wallPosts         ClassWallPost[]
+  assignments       ClassAssignment[]
+  materials         ClassMaterial[]
+  gcrReports        GcrReport[]
+  scheduleTemplates ScheduleTemplate[]
+
+  @@unique([academicYearId, code])
+  @@index([academicYearId])
+  @@index([gradeLevelId])
+  @@index([status])
+}
+
+model ClassWallPost {
+  id        String             @id @default(uuid())
+  classId   String
+  authorId  String
+  title     String
+  content   String
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  class     AcademicClass      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  author    User               @relation("ClassWallPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  comments  ClassWallComment[]
+
+  @@index([classId, createdAt])
+}
+
+model ClassWallComment {
+  id        String        @id @default(uuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime      @default(now())
+  post      ClassWallPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User          @relation("ClassWallCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+}
+
+model ClassAssignment {
+  id             String                      @id @default(uuid())
+  classId        String
+  createdById    String
+  title          String
+  description    String
+  dueAt          DateTime?
+  points         Int?
+  submissionType String?
+  status         ClassAssignmentStatus       @default(DRAFT)
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+  class          AcademicClass               @relation(fields: [classId], references: [id], onDelete: Cascade)
+  createdBy      User                        @relation("ClassAssignmentAuthor", fields: [createdById], references: [id], onDelete: Cascade)
+  submissions    ClassSubmission[]
+  attachments    ClassAssignmentAttachment[]
+
+  @@index([classId, status, dueAt])
+}
+
+model ClassAssignmentAttachment {
+  id           String          @id @default(uuid())
+  assignmentId String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int?
+  storageKey   String          @unique
+  createdAt    DateTime        @default(now())
+  assignment   ClassAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId, createdAt])
+}
+
+model ClassSubmission {
+  id           String                      @id @default(uuid())
+  assignmentId String
+  studentId    String
+  body         String?
+  fileName     String?
+  mimeType     String?
+  storageKey   String?
+  status       ClassSubmissionStatus       @default(NOT_STARTED)
+  submittedAt  DateTime?
+  score        Float?
+  feedback     String?
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+  assignment   ClassAssignment             @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student      StudentProfile              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  attachments  ClassSubmissionAttachment[]
+
+  @@unique([assignmentId, studentId])
+  @@index([studentId, status])
+}
+
+model ClassSubmissionAttachment {
+  id           String          @id @default(uuid())
+  submissionId String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int?
+  storageKey   String          @unique
+  createdAt    DateTime        @default(now())
+  submission   ClassSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId, createdAt])
+}
+
+model ClassMaterial {
+  id                String            @id @default(uuid())
+  classId           String
+  uploadedById      String
+  name              String
+  kind              ClassMaterialKind @default(FILE)
+  mimeType          String?
+  sizeBytes         Int?
+  storageKey        String?
+  externalUrl       String?
+  visibleToStudents Boolean           @default(true)
+  isImportant       Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  class             AcademicClass     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  uploadedBy        User              @relation("ClassMaterialUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([classId, createdAt])
+}
+
+model ClassTeacher {
+  classId   String
+  teacherId String
+  isPrimary Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  class     AcademicClass  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacher   TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@id([classId, teacherId])
+  @@index([teacherId])
+}
+
+model ClassEnrollment {
+  classId   String
+  studentId String
+  status    EnrollmentStatus @default(ACTIVE)
+  createdAt DateTime         @default(now())
+  class     AcademicClass    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([classId, studentId])
+  @@index([studentId])
+  @@index([status])
+}
+
+model Subject {
+  id          String         @id @default(uuid())
+  name        String
+  shortName   String
+  color       String?
+  status      AcademicStatus @default(ACTIVE)
+  paceEnabled Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  classes     ClassSubject[]
+  paces       Pace[]
+
+  @@unique([shortName])
+  @@index([status])
+  @@index([paceEnabled])
+}
+
+model ClassSubject {
+  id                String                    @id @default(uuid())
+  classId           String
+  subjectId         String
+  targetPaces       Int                       @default(3)
+  createdAt         DateTime                  @default(now())
+  class             AcademicClass             @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject           Subject                   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  paceRecords       StudentPaceRecord[]
+  paceGoals         StudentPaceGoal[]
+  teachers          ClassSubjectTeacher[]
+  scheduleBlocks    ScheduleTemplateBlock[]
+  scheduleScopes    ScheduleTemplateSubject[]
+  availabilitySlots TeacherAvailabilitySlot[]
+  physicalBookings  StudentPhysicalBooking[]
+  gcrSubjectTasks   GcrSubjectTask[]
+  gcrVerses         GcrVerse[]
+
+  @@unique([classId, subjectId])
+  @@index([subjectId])
+}
+
+model GradeLevel {
+  id                String             @id @default(uuid())
+  code              String             @unique
+  name              String
+  sortOrder         Int
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  students          StudentProfile[]
+  classes           AcademicClass[]
+  scheduleTemplates ScheduleTemplate[]
+
+  @@unique([sortOrder])
+  @@index([isActive])
+}
+
+model ClassSubjectTeacher {
+  classSubjectId String
+  teacherId      String
+  createdAt      DateTime       @default(now())
+  classSubject   ClassSubject   @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  teacher        TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@id([classSubjectId, teacherId])
+  @@index([teacherId])
+}
+
+model ScheduleGrid {
+  id        String             @id @default(uuid())
+  name      String
+  version   Int                @unique
+  isActive  Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  periods   SchedulePeriod[]
+  templates ScheduleTemplate[]
+
+  @@index([isActive])
+}
+
+model SchedulePeriod {
+  id        String                  @id @default(uuid())
+  gridId    String
+  order     Int
+  startTime String
+  endTime   String
+  kind      SchedulePeriodKind      @default(INSTRUCTIONAL)
+  label     String?
+  grid      ScheduleGrid            @relation(fields: [gridId], references: [id], onDelete: Cascade)
+  blocks    ScheduleTemplateBlock[]
+
+  @@unique([gridId, order])
+  @@unique([gridId, startTime, endTime])
+}
+
+model ScheduleTemplate {
+  id             String                    @id @default(uuid())
+  academicYearId String
+  audienceType   ScheduleAudienceType      @default(GRADE)
+  gradeLevelId   String?
+  classId        String?
+  teacherId      String?
+  gridId         String
+  name           String
+  status         ScheduleTemplateStatus    @default(DRAFT)
+  publishedAt    DateTime?
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+  academicYear   AcademicYear              @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  gradeLevel     GradeLevel?               @relation(fields: [gradeLevelId], references: [id], onDelete: Restrict)
+  class          AcademicClass?            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacher        TeacherProfile?           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  grid           ScheduleGrid              @relation(fields: [gridId], references: [id], onDelete: Restrict)
+  blocks         ScheduleTemplateBlock[]
+  subjectScopes  ScheduleTemplateSubject[]
+
+  @@unique([academicYearId, gradeLevelId])
+  @@unique([academicYearId, classId])
+  @@unique([academicYearId, teacherId])
+  @@index([status])
+  @@index([audienceType])
+}
+
+model ScheduleTemplateSubject {
+  templateId     String
+  classSubjectId String
+  template       ScheduleTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  classSubject   ClassSubject     @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+
+  @@id([templateId, classSubjectId])
+  @@index([classSubjectId])
+}
+
+model ScheduleTemplateBlock {
+  id             String            @id @default(uuid())
+  templateId     String
+  periodId       String
+  weekday        Weekday
+  kind           ScheduleBlockKind
+  label          String?
+  classSubjectId String?
+  teacherId      String?
+  template       ScheduleTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  period         SchedulePeriod    @relation(fields: [periodId], references: [id], onDelete: Restrict)
+  classSubject   ClassSubject?     @relation(fields: [classSubjectId], references: [id], onDelete: SetNull)
+  teacher        TeacherProfile?   @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@unique([templateId, weekday, periodId])
+  @@index([teacherId, weekday, periodId])
+  @@index([classSubjectId])
+}
+
+model TeacherAvailabilitySlot {
+  id             String                   @id @default(uuid())
+  classSubjectId String
+  teacherId      String
+  weekday        Weekday
+  startTime      String
+  endTime        String
+  location       String?
+  instructions   String?
+  isActive       Boolean                  @default(true)
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  classSubject   ClassSubject             @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  teacher        TeacherProfile           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  bookings       StudentPhysicalBooking[]
+
+  @@unique([classSubjectId, teacherId, weekday, startTime, endTime])
+  @@index([teacherId, isActive])
+}
+
+model StudentPhysicalBooking {
+  id                 String                  @id @default(uuid())
+  studentId          String
+  classSubjectId     String
+  teacherId          String
+  availabilitySlotId String
+  scheduledDate      DateTime                @db.Date
+  startTime          String
+  endTime            String
+  status             PhysicalBookingStatus   @default(PENDING)
+  studentNote        String?
+  teacherResponse    String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  student            StudentProfile          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classSubject       ClassSubject            @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  teacher            TeacherProfile          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  availabilitySlot   TeacherAvailabilitySlot @relation(fields: [availabilitySlotId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, classSubjectId, scheduledDate, startTime])
+  @@index([studentId, status])
+  @@index([teacherId, status])
+  @@index([scheduledDate])
+}
+
+model Pace {
+  id          String              @id @default(uuid())
+  subjectId   String
+  number      Int
+  title       String?
+  sequence    Int
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  subject     Subject             @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  paceRecords StudentPaceRecord[]
+
+  @@unique([subjectId, number])
+  @@index([subjectId])
+}
+
+model StudentPaceRecord {
+  id             String             @id @default(uuid())
+  studentId      String
+  classSubjectId String
+  paceId         String?
+  paceNumber     Int
+  academicTermId String
+  status         PaceProgressStatus @default(PLANNED)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  student        StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classSubject   ClassSubject       @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  pace           Pace?              @relation(fields: [paceId], references: [id], onDelete: SetNull)
+  academicTerm   AcademicTerm       @relation(fields: [academicTermId], references: [id], onDelete: Cascade)
+  grade          PaceGrade?
+
+  @@unique([studentId, classSubjectId, paceNumber, academicTermId])
+  @@index([studentId])
+  @@index([classSubjectId])
+  @@index([academicTermId])
+  @@index([status])
+}
+
+model StudentPaceGoal {
+  id             String         @id @default(uuid())
+  studentId      String
+  classSubjectId String
+  academicTermId String
+  targetPaces    Int
+  startingPaceNumber Int          @default(1)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  student        StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classSubject   ClassSubject   @relation(fields: [classSubjectId], references: [id], onDelete: Cascade)
+  academicTerm   AcademicTerm   @relation(fields: [academicTermId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, classSubjectId, academicTermId])
+  @@index([studentId, academicTermId])
+  @@index([classSubjectId, academicTermId])
+}
+
+model PaceGrade {
+  id                  String            @id @default(uuid())
+  studentPaceRecordId String            @unique
+  score               Int
+  feedback            String?
+  status              PaceGradeStatus   @default(GRADED)
+  gradedById          String?
+  gradedAt            DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  studentPaceRecord   StudentPaceRecord @relation(fields: [studentPaceRecordId], references: [id], onDelete: Cascade)
+  gradedBy            User?             @relation("PaceGradeGrader", fields: [gradedById], references: [id], onDelete: SetNull)
+
+  @@index([gradedById])
+  @@index([status])
+}
+
+model Conversation {
+  id           String                    @id @default(uuid())
+  subject      String
+  status       ConversationStatus        @default(OPEN)
+  createdById  String?
+  escalatedAt  DateTime?
+  closedAt     DateTime?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  createdBy    User?                     @relation("ConversationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  participants ConversationParticipant[]
+  messages     ConversationMessage[]
+
+  @@index([status])
+  @@index([createdById])
+}
+
+model ConversationParticipant {
+  id             String                      @id @default(uuid())
+  conversationId String
+  userId         String
+  type           ConversationParticipantType
+  joinedAt       DateTime                    @default(now())
+  conversation   Conversation                @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([type])
+}
+
+model ConversationMessage {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderId       String
+  body           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("ConversationMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+model GcrReport {
+  id                   String           @id @default(uuid())
+  studentId            String
+  classId              String
+  academicTermId       String
+  reportDate           DateTime         @db.Date
+  responsibleTeacherId String
+  status               GcrReportStatus  @default(DRAFT)
+  generalComment       String?
+  missingFields        Json?
+  submittedAt          DateTime?
+  submittedById        String?
+  firstSubmittedAt     DateTime?
+  isLate               Boolean          @default(false)
+  hasPostCloseChanges  Boolean          @default(false)
+  version              Int              @default(1)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  createdById          String
+  updatedById          String
+  voidedAt             DateTime?
+  voidedById           String?
+  voidReason           String?
+  student              StudentProfile   @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  class                AcademicClass    @relation(fields: [classId], references: [id], onDelete: Restrict)
+  academicTerm         AcademicTerm     @relation(fields: [academicTermId], references: [id], onDelete: Restrict)
+  responsibleTeacher   TeacherProfile   @relation(fields: [responsibleTeacherId], references: [id], onDelete: Restrict)
+  createdBy            User             @relation("GcrReportCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy            User             @relation("GcrReportUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+  submittedBy          User?            @relation("GcrReportSubmitter", fields: [submittedById], references: [id], onDelete: Restrict)
+  voidedBy             User?            @relation("GcrReportVoider", fields: [voidedById], references: [id], onDelete: Restrict)
+  attendance           GcrAttendance?
+  subjectTasks         GcrSubjectTask[]
+  verses               GcrVerse[]
+  merits               GcrMerit[]
+  demerits             GcrDemerit[]
+  auditEvents          GcrAuditEvent[]
+
+  @@unique([studentId, classId, reportDate])
+  @@index([reportDate, status])
+  @@index([responsibleTeacherId, reportDate, status])
+  @@index([classId, reportDate])
+}
+
+model GcrAttendance {
+  reportId    String              @id
+  status      GcrAttendanceStatus
+  comment     String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  createdById String
+  updatedById String
+  report      GcrReport           @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  createdBy   User                @relation("GcrAttendanceCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy   User                @relation("GcrAttendanceUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+}
+
+model GcrSubjectTask {
+  id               String                   @id @default(uuid())
+  reportId         String
+  classSubjectId   String
+  homeworkAssigned Boolean                  @default(false)
+  completionStatus GcrTaskCompletionStatus?
+  comment          String?
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  createdById      String
+  updatedById      String
+  report           GcrReport                @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  classSubject     ClassSubject             @relation(fields: [classSubjectId], references: [id], onDelete: Restrict)
+  createdBy        User                     @relation("GcrSubjectTaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy        User                     @relation("GcrSubjectTaskUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@unique([reportId, classSubjectId])
+  @@index([classSubjectId])
+}
+
+model GcrVerse {
+  id             String         @id @default(uuid())
+  reportId       String
+  studentId      String
+  academicTermId String
+  classSubjectId String?
+  slot           Int
+  reference      String
+  text           String?
+  score          Int
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  createdById    String
+  updatedById    String
+  report         GcrReport      @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  student        StudentProfile @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  academicTerm   AcademicTerm   @relation(fields: [academicTermId], references: [id], onDelete: Restrict)
+  classSubject   ClassSubject?  @relation(fields: [classSubjectId], references: [id], onDelete: Restrict)
+  createdBy      User           @relation("GcrVerseCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy      User           @relation("GcrVerseUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, academicTermId, slot])
+  @@index([reportId])
+  @@index([classSubjectId])
+}
+
+model GcrMerit {
+  id          String    @id @default(uuid())
+  reportId    String
+  comment     String
+  benefit     String?
+  occurredAt  DateTime  @default(now())
+  isPostClose Boolean   @default(false)
+  createdById String
+  voidedAt    DateTime?
+  voidedById  String?
+  voidReason  String?
+  report      GcrReport @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  createdBy   User      @relation("GcrMeritCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  voidedBy    User?     @relation("GcrMeritVoider", fields: [voidedById], references: [id], onDelete: Restrict)
+
+  @@index([reportId, occurredAt])
+}
+
+model GcrDemerit {
+  id                String    @id @default(uuid())
+  reportId          String
+  ordinal           Int
+  comment           String
+  occurredAt        DateTime  @default(now())
+  isPostClose       Boolean   @default(false)
+  detentionRequired Boolean   @default(false)
+  detentionDate     DateTime? @db.Date
+  createdById       String
+  voidedAt          DateTime?
+  voidedById        String?
+  voidReason        String?
+  report            GcrReport @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  createdBy         User      @relation("GcrDemeritCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  voidedBy          User?     @relation("GcrDemeritVoider", fields: [voidedById], references: [id], onDelete: Restrict)
+
+  @@unique([reportId, ordinal])
+}
+
+model GcrAuditEvent {
+  id         String         @id @default(uuid())
+  reportId   String
+  entityType String
+  entityId   String
+  action     GcrAuditAction
+  oldValue   Json?
+  newValue   Json?
+  actorId    String
+  reason     String?
+  createdAt  DateTime       @default(now())
+  metadata   Json?
+  report     GcrReport      @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  actor      User           @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([reportId, createdAt])
+  @@index([entityType, entityId])
+}

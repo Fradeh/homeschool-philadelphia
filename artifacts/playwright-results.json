@@ -1,0 +1,183 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\herre\\OneDrive\\Escritorio\\Proyectos\\HomeSchool-Philadelphia\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/auth",
+      "e2e/security"
+    ],
+    "configFile": "C:\\Users\\herre\\OneDrive\\Escritorio\\Proyectos\\HomeSchool-Philadelphia\\playwright.config.ts",
+    "rootDir": "C:/Users/herre/OneDrive/Escritorio/Proyectos/HomeSchool-Philadelphia/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\herre\\OneDrive\\Escritorio\\Proyectos\\HomeSchool-Philadelphia\\e2e\\global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/herre/OneDrive/Escritorio/Proyectos/HomeSchool-Philadelphia/artifacts/playwright-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/herre/OneDrive/Escritorio/Proyectos/HomeSchool-Philadelphia/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "artifacts/playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.1",
+    "workers": 1,
+    "webServer": {
+      "command": "node scripts/qa/start-e2e-servers.mjs",
+      "url": "http://127.0.0.1:3160",
+      "reuseExistingServer": false,
+      "timeout": 120000,
+      "env": {
+        "ALLUSERSPROFILE": "C:\\ProgramData",
+        "ANDROID_AVD_HOME": "C:\\Users\\herre\\.android\\avd",
+        "APPDATA": "C:\\Users\\herre\\AppData\\Roaming",
+        "CHROME_CRASHPAD_PIPE_NAME": "\\\\.\\pipe\\crashpad_9584_PLRHCBQDXTNXBWIL",
+        "CODEX_INTERNAL_ORIGINATOR_OVERRIDE": "codex_vscode",
+        "CODEX_SANDBOX_NETWORK_DISABLED": "1",
+        "CODEX_THREAD_ID": "019f54a8-a24e-7503-a4e7-f3eb72490bcb",
+        "CommonProgramFiles": "C:\\Program Files\\Common Files",
+        "CommonProgramFiles(x86)": "C:\\Program Files (x86)\\Common Files",
+        "CommonProgramW6432": "C:\\Program Files\\Common Files",
+        "COMPUTERNAME": "MSI",
+        "ComSpec": "C:\\WINDOWS\\system32\\cmd.exe",
+        "DEBUG": "release",
+        "DriverData": "C:\\Windows\\System32\\Drivers\\DriverData",
+        "E2E_API_PORT": "4160",
+        "E2E_DATABASE_URL": "postgresql://homeschool:homeschool@127.0.0.1:5432/homeschool_platform_test?schema=public",
+        "E2E_RESET_DATABASE": "RESET_TEST_DATABASE",
+        "E2E_WEB_PORT": "3160",
+        "EFC_9092_1262719628": "1",
+        "EFC_9092_1592913036": "1",
+        "EFC_9092_2283032206": "1",
+        "EFC_9092_2775293581": "1",
+        "EFC_9092_3789132940": "1",
+        "EFC_9092_4126798990": "1",
+        "ELECTRON_RUN_AS_NODE": "1",
+        "FPS_BROWSER_APP_PROFILE_STRING": "Internet Explorer",
+        "FPS_BROWSER_USER_PROFILE_STRING": "Default",
+        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_KEY_0": "safe.directory",
+        "GIT_CONFIG_VALUE_0": "C:\\Users\\herre\\OneDrive\\Escritorio\\Proyectos\\HomeSchool-Philadelphia",
+        "GIT_PAGER": "more.com",
+        "HOMEDRIVE": "C:",
+        "HOMEPATH": "\\Users\\herre",
+        "JAVA_HOME": "C:\\Program Files\\Android\\Android Studio\\jbr",
+        "LESS": "",
+        "LOCALAPPDATA": "C:\\Users\\herre\\AppData\\Local",
+        "LOGONSERVER": "\\\\MSI",
+        "NODE_PATH": "C:\\Users\\herre\\OneDrive\\Escritorio\\Proyectos\\HomeSchool-Philadelphia\\node_modules\\.pnpm\\@playwright+test@1.61.1\\node_modules\\@playwright\\test\\node_modules;C:\\Users\\herre\\OneDrive\\Escritorio\\Proyectos\\HomeSchool-Philadelphia\\node_modules\\.pnpm\\@playwright+test@1.61.1\\node_modules;C:\\Users\\herre\\OneDrive\\Escritorio\\Proyectos\\HomeSchool-Philadelphia\\node_modules\\.pnpm\\node_modules",
+        "npm_command": "exec",
+        "npm_config_user_agent": "pnpm/11.7.0 npm/? node/v24.13.0 win32 x64",
+        "NUMBER_OF_PROCESSORS": "12",
+        "OneDrive": "C:\\Users\\herre\\OneDrive",
+        "OS": "Windows_NT",
+        "PAGER": "more.com",
+        "PATH": "./node_modules/.bin;C:\\Users\\herre\\OneDrive\\Escritorio\\Proyectos\\HomeSchool-Philadelphia\\node_modules\\.bin;C:\\Users\\herre\\.codex\\tmp\\arg0\\codex-arg0MX79j3;C:\\Program Files\\Common Files\\Oracle\\Java\\javapath;C:\\oracle\\dbhomeXE\\bin;C:\\Oracle19c\\bin;C:\\Users\\herre\\Downloads\\WINDOWS.X64_193000_db_home\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR;C:\\Program Files\\Android\\Android Studio\\jbr\\bin;C:\\Program Files\\Git\\cmd;C:\\Program Files\\Docker\\Docker\\resources\\bin;C:\\Program Files\\nodejs\\;C:\\Program Files\\dotnet\\;C:\\Program Files\\k6\\;C:\\Program Files\\Common Files\\Oracle\\Java\\javapath;C:\\oracle\\dbhomeXE\\bin;C:\\Oracle19c\\bin;C:\\Users\\herre\\Downloads\\WINDOWS.X64_193000_db_home\\bin;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR;C:\\Program Files\\Android\\Android Studio\\jbr\\bin;C:\\Program Files\\Git\\cmd;C:\\Program Files\\Docker\\Docker\\resources\\bin;C:\\Program Files\\nodejs\\;C:\\Users\\herre\\AppData\\Local\\Programs\\Python\\Python313\\Scripts\\;C:\\Users\\herre\\AppData\\Local\\Programs\\Python\\Python313\\;C:\\Users\\herre\\AppData\\Local\\Programs\\Python\\Launcher\\;C:\\Users\\herre\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\herre\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\php;C:\\Program Files\\Apache\\maven\\apache-maven-3.9.11\\bin;C:\\src\\flutter\\bin;C:\\Users\\herre\\AppData\\Local\\GitHubDesktop\\bin;C:\\Users\\herre\\AppData\\Roaming\\npm;c:\\app\\ords\\bin;C:\\Users\\herre\\AppData\\Local\\Microsoft\\WinGet\\Links;C:\\Users\\herre\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Genymobile.scrcpy_Microsoft.Winget.Source_8wekyb3d8bbwe\\scrcpy-win64-v4.0;;C:\\Users\\herre\\AppData\\Local\\Microsoft\\WindowsApps;c:\\Users\\herre\\.vscode\\extensions\\openai.chatgpt-26.707.41301-win32-x64\\bin\\windows-x86_64",
+        "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JSE;.WSF;.WSH;.MSC;.CPL",
+        "pnpm_config_verify_deps_before_run": "false",
+        "PNPM_PACKAGE_NAME": "homeschool-platform",
+        "PROCESSOR_ARCHITECTURE": "AMD64",
+        "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+        "PROCESSOR_LEVEL": "6",
+        "PROCESSOR_REVISION": "ba02",
+        "ProgramData": "C:\\ProgramData",
+        "ProgramFiles": "C:\\Program Files",
+        "ProgramFiles(x86)": "C:\\Program Files (x86)",
+        "ProgramW6432": "C:\\Program Files",
+        "PROMPT": "$P$G",
+        "PSModulePath": "C:\\Users\\herre\\Documents\\WindowsPowerShell\\Modules;C:\\Program Files\\WindowsPowerShell\\Modules;C:\\WINDOWS\\system32\\WindowsPowerShell\\v1.0\\Modules",
+        "PUBLIC": "C:\\Users\\Public",
+        "RUST_LOG": "warn",
+        "SESSIONNAME": "Console",
+        "SystemDrive": "C:",
+        "SystemRoot": "C:\\WINDOWS",
+        "TEMP": "C:\\Users\\herre\\AppData\\Local\\Temp",
+        "TMP": "C:\\Users\\herre\\AppData\\Local\\Temp",
+        "USERDOMAIN": "MSI",
+        "USERDOMAIN_ROAMINGPROFILE": "MSI",
+        "USERNAME": "herre",
+        "USERPROFILE": "C:\\Users\\herre",
+        "VBOX_MSI_INSTALL_PATH": "C:\\Program Files\\Oracle\\VirtualBox\\",
+        "VSCODE_CODE_CACHE_PATH": "C:\\Users\\herre\\AppData\\Roaming\\Code\\CachedData\\fc3def6774c76082adf699d366f31a557ce5573f",
+        "VSCODE_CRASH_REPORTER_PROCESS_TYPE": "extensionHost",
+        "VSCODE_CWD": "C:\\Users\\herre\\AppData\\Local\\Programs\\Microsoft VS Code",
+        "VSCODE_ESM_ENTRYPOINT": "vs/workbench/api/node/extensionHostProcess",
+        "VSCODE_HANDLES_UNCAUGHT_ERRORS": "true",
+        "VSCODE_IPC_HOOK": "\\\\.\\pipe\\2834d827-1.128.0-main-sock",
+        "VSCODE_NLS_CONFIG": "{\"userLocale\":\"en-us\",\"osLocale\":\"es-es\",\"resolvedLanguage\":\"en\",\"defaultMessagesFile\":\"C:\\\\Users\\\\herre\\\\AppData\\\\Local\\\\Programs\\\\Microsoft VS Code\\\\fc3def6774\\\\resources\\\\app\\\\out\\\\nls.messages.json\",\"locale\":\"en-us\",\"availableLanguages\":{}}",
+        "VSCODE_PID": "9584",
+        "windir": "C:\\WINDOWS",
+        "ZES_ENABLE_SYSMAN": "1",
+        "NODE_ENV": "test",
+        "API_PORT": "4160",
+        "WEB_ORIGIN": "http://127.0.0.1:3160",
+        "DATABASE_URL": "postgresql://homeschool:homeschool@127.0.0.1:5432/homeschool_platform_test?schema=public",
+        "JWT_SECRET": "qa-local-only-secret-change-me",
+        "STORAGE_DRIVER": "local",
+        "STORAGE_LOCAL_ROOT": "../../tmp/e2e-storage",
+        "NEXT_DIST_DIR": ".next-e2e",
+        "NEXT_PUBLIC_API_URL": "http://127.0.0.1:4160/api",
+        "NEXT_PUBLIC_ENABLE_DEMO_DATA": "false"
+      }
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Process from config.webServer was not able to start. Exit code: 1",
+      "stack": "Error: Process from config.webServer was not able to start. Exit code: 1"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-07-12T16:30:46.612Z",
+    "duration": 244.394,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

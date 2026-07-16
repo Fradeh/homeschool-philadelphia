@@ -1,0 +1,3 @@
+export const adminRoutes = ["/admin", "/admin/users", "/admin/classes", "/admin/schedules", "/admin/families", "/admin/paces", "/admin/settings"];
+export const teacherRoutes = ["/teacher/dashboard", "/teacher/classes", "/teacher/gcr", "/teacher/schedule", "/teacher/paces", "/teacher/grades", "/teacher/messages", "/teacher/assignments", "/teacher/calendar", "/teacher/files", "/teacher/notifications"];
+export const studentRoutes = ["/student/dashboard", "/student/classes", "/student/schedule", "/student/paces", "/student/grades", "/student/assignments", "/student/calendar", "/student/files", "/student/messages", "/student/notifications"];

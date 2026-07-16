@@ -1,0 +1,35 @@
+{
+  "name": "homeschool-platform",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.7.0",
+  "scripts": {
+    "dev": "pnpm --filter @homeschool/shared build && pnpm --parallel --filter @homeschool/web --filter @homeschool/api dev",
+    "dev:full": "docker compose up -d && pnpm dev",
+    "dev:web": "pnpm --filter @homeschool/web dev",
+    "dev:api": "pnpm --filter @homeschool/api dev",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "db:generate": "pnpm --filter @homeschool/api prisma:generate",
+    "db:migrate": "pnpm --filter @homeschool/api prisma:migrate",
+    "db:deploy": "pnpm --filter @homeschool/api prisma:deploy",
+    "db:seed": "pnpm --filter @homeschool/api prisma:seed",
+    "test": "pnpm -r test",
+    "qa:db:reset": "node scripts/qa/reset-test-db.mjs",
+    "qa:e2e": "node scripts/qa/run-e2e.mjs",
+    "qa:e2e:headed": "node scripts/qa/run-e2e.mjs --headed",
+    "qa:e2e:report": "playwright show-report artifacts/playwright-report",
+    "qa:all": "node scripts/qa/run-suite.mjs",
+    "ci": "pnpm --filter @homeschool/shared build && pnpm db:generate && pnpm lint && pnpm test && pnpm build",
+    "db:studio": "pnpm --filter @homeschool/api prisma:studio"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  }
+}

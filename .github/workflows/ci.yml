@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: homeschool
+          POSTGRES_PASSWORD: homeschool
+          POSTGRES_DB: homeschool_platform_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U homeschool -d homeschool_platform_test"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://homeschool:homeschool@localhost:5432/homeschool_platform_test?schema=public
+      JWT_SECRET: ci-only-secret-at-least-32-characters-long
+      WEB_ORIGIN: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api
+      NODE_ENV: test
+      RUN_E2E: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @homeschool/shared build
+      - run: pnpm --filter @homeschool/api exec prisma validate
+      - run: pnpm db:generate
+      - run: pnpm db:deploy
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
