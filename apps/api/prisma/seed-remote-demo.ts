@@ -16,12 +16,14 @@ import * as bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 const DEMO_CONFIRMATION = "CREATE_CLEAN_PHILADELPHIA_DEMO";
 const DEMO_PASSWORD = "PhiladelphiaDemo2026!";
+const ADMIN_EMAIL = "admin@philadelphia.demo";
 const DEMO_EMAILS = [
   "direc.gabriela@philadelphia.demo",
   "laura.teacher@philadelphia.demo",
   "jose.teacher@philadelphia.demo",
   "student.sofia@philadelphia.demo",
-  "student.daniel@philadelphia.demo"
+  "student.daniel@philadelphia.demo",
+  ADMIN_EMAIL
 ] as const;
 const weekdays = [
   Weekday.MONDAY,
@@ -70,36 +72,90 @@ async function createUser(
   });
 }
 
+async function ensureGabrielaRoles(tx: Prisma.TransactionClient) {
+  const user = await tx.user.findUnique({
+    where: { email: DEMO_EMAILS[0] }
+  });
+  if (!user) throw new Error(`Demo user ${DEMO_EMAILS[0]} was not found`);
+
+  const roles = await tx.role.findMany({
+    where: { name: { in: [RoleName.TEACHER, RoleName.ADMINISTRATIVE] } }
+  });
+  if (roles.length !== 2) {
+    throw new Error("TEACHER and ADMINISTRATIVE roles are required");
+  }
+
+  await tx.userRole.deleteMany({ where: { userId: user.id } });
+  await tx.userRole.createMany({
+    data: roles.map((role) => ({ userId: user.id, roleId: role.id }))
+  });
+}
+
+async function ensureAdminUser(tx: Prisma.TransactionClient, passwordHash: string) {
+  const existing = await tx.user.findUnique({ where: { email: ADMIN_EMAIL } });
+  const admin =
+    existing ??
+    (await createUser(tx, {
+      email: ADMIN_EMAIL,
+      firstName: "Administrador",
+      lastName: "Philadelphia",
+      roles: [RoleName.ADMIN],
+      passwordHash
+    }));
+
+  const adminRole = await tx.role.findUnique({ where: { name: RoleName.ADMIN } });
+  if (!adminRole) throw new Error("ADMIN role is required");
+
+  await tx.userRole.deleteMany({ where: { userId: admin.id } });
+  await tx.userRole.create({
+    data: { userId: admin.id, roleId: adminRole.id }
+  });
+}
+
 async function main() {
   assertRemoteDemoTarget();
 
   const result = await prisma.$transaction(
     async (tx) => {
-      const existingDemoUsers = await tx.user.count({
-        where: { email: { in: [...DEMO_EMAILS] } }
-      });
-      if (existingDemoUsers === DEMO_EMAILS.length) {
-        return { skipped: true };
-      }
-
-      const existingUsers = await tx.user.count();
-      if (existingUsers > 0) {
-        throw new Error(
-          "The remote database already contains users. The clean demo seed will not overwrite them."
-        );
-      }
-
       await tx.role.createMany({
         data: Object.values(RoleName).map((name) => ({ name })),
         skipDuplicates: true
       });
 
       const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
+      const existingDemoUsers = await tx.user.findMany({
+        where: { email: { in: [...DEMO_EMAILS] } },
+        select: { email: true }
+      });
+      const existingEmails = new Set(existingDemoUsers.map((user) => user.email));
+      const originalDemoExists = DEMO_EMAILS.slice(0, 5).every((email) =>
+        existingEmails.has(email)
+      );
+      const existingUsers = await tx.user.count();
+
+      if (existingDemoUsers.length === DEMO_EMAILS.length) {
+        await ensureGabrielaRoles(tx);
+        await ensureAdminUser(tx, passwordHash);
+        return { skipped: true, adminCreated: false };
+      }
+
+      if (originalDemoExists && existingUsers === 5 && !existingEmails.has(ADMIN_EMAIL)) {
+        await ensureGabrielaRoles(tx);
+        await ensureAdminUser(tx, passwordHash);
+        return { skipped: true, adminCreated: true };
+      }
+
+      if (existingUsers > 0) {
+        throw new Error(
+          "The remote database already contains users. The clean demo seed will not overwrite them."
+        );
+      }
+
       const gabrielaUser = await createUser(tx, {
         email: DEMO_EMAILS[0],
         firstName: "Gabriela",
         lastName: "Mendoza",
-        roles: [RoleName.ADMIN, RoleName.ADMINISTRATIVE, RoleName.DIRECTOR, RoleName.TEACHER],
+        roles: [RoleName.TEACHER, RoleName.ADMINISTRATIVE],
         passwordHash
       });
       const lauraUser = await createUser(tx, {
@@ -130,6 +186,7 @@ async function main() {
         roles: [RoleName.STUDENT],
         passwordHash
       });
+      await ensureAdminUser(tx, passwordHash);
 
       await tx.directorProfile.create({
         data: { userId: gabrielaUser.id, title: "Directora general" }
@@ -468,13 +525,17 @@ async function main() {
         await tx.scheduleTemplateBlock.createMany({ data: blocks });
       }
 
-      return { skipped: false };
+      return { skipped: false, adminCreated: true };
     },
     { maxWait: 20_000, timeout: 120_000 }
   );
 
   if (result.skipped) {
-    process.stdout.write("Remote Philadelphia demo already exists; nothing was changed.\n");
+    process.stdout.write(
+      result.adminCreated
+        ? "Remote Philadelphia demo already exists; the ADMIN account was added and Gabriela roles were corrected.\n"
+        : "Remote Philadelphia demo already exists; ADMIN and Gabriela roles were verified.\n"
+    );
     return;
   }
 
