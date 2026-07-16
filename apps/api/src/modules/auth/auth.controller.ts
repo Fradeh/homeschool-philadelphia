@@ -17,11 +17,12 @@ export class AuthController {
   @Post("login")
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) response: Response): Promise<{ user: AuthUser }> {
     const session = await this.authService.login(dto);
+    const isProduction = this.config.get<string>("NODE_ENV") === "production";
 
     response.cookie("homeschool_access_token", session.accessToken, {
       httpOnly: true,
-      secure: this.config.get<string>("NODE_ENV") === "production",
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       path: "/",
       maxAge: 24 * 60 * 60 * 1000
     });
@@ -38,10 +39,12 @@ export class AuthController {
   @Post("logout")
   @HttpCode(204)
   logout(@Res({ passthrough: true }) response: Response): void {
+    const isProduction = this.config.get<string>("NODE_ENV") === "production";
+
     response.clearCookie("homeschool_access_token", {
       httpOnly: true,
-      secure: this.config.get<string>("NODE_ENV") === "production",
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       path: "/"
     });
   }
